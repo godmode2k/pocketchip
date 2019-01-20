@@ -1,0 +1,69 @@
+#!/bin/sh
+
+#
+# PocketChip U-boot flashing script
+# hjkim, 2018.03.08
+#
+
+# Reference:
+# https://github.com/NextThingCo/CHIP-tools
+# https://github.com/NextThingCo/CHIP-tools/blob/chip/stable/common.sh
+# https://github.com/NextThingCo/CHIP-tools/blob/chip/stable/chip-fel-upload.sh
+#
+# mkimage
+# sudo apt-get install u-boot-tools
+# img2simg
+# sudo apt-get install android-tools-fsutils
+
+
+
+export PATH=/test/tmp/pocketchip_tools/sunxi-tools-master:$PATH
+# check: fastboot path
+# check: img2simg path
+
+SUNXI_FEL=sunxi-fel
+FASTBOOT=fastboot
+UBOOT_PATH="/test/tmp/pocketchip_uboot/CHIP-u-boot-nextthing-2016.01-next-mlc"
+UBOOT_SCRIPT="./CHIP-u-boot-script"
+BUILDROOT_OUTPUT_PATH="/test/tmp/pocketchip_buildroot/CHIP-buildroot-chip-stable/output/images"
+
+
+
+
+echo '[img2simg]: ...'
+UBI="$BUILDROOT_OUTPUT_PATH/rootfs.ubi"
+SPARSE_UBI="${TMPDIR}/rootfs.ubi.sparse"
+UBI_MEM_ADDR=0x4b000000
+img2simg ${UBI} ${SPARSE_UBI} $((2*1024*1024))
+echo
+
+
+
+echo '[flashing] ...'
+# EXECUTE THE MAIN U-BOOT BINARY
+$SUNXI_FEL -v -p exe 0x4a000000
+
+
+
+if [[ -v DONT_WAIT_FOR_STATE ]]; then return 0; fi
+echo -n "waiting for fastboot...";
+export FLASH_WAITING_FOR_DEVICE=1
+for ((i=$TIMEOUT; i>0; i--)) {
+	if [[ ! -z "$(${FASTBOOT} -i 0x1f3a $@ devices)" ]]; then
+		echo "OK";
+		unset FLASH_WAITING_FOR_DEVICE
+		return 0;
+	fi
+	echo -n ".";
+	sleep 1
+}
+
+
+
+fastboot -i 0x1f3a -u flash UBI ${SPARSE_UBI}
+fastboot -i 0x1f3a continue
+
+
+
+
+echo 'done...'

@@ -1,0 +1,41 @@
+
+
+PochetCHIP flashing guide
+ - hjkim, 2018.03.22
+
+
+
+# for Toshiba_4G_MLC
+
+
+./chip-create-nand-images.sh [uboot path] [rootfs.tar] [output path]
+
+# NOTE:
+ - rootfs.tar: CHIP-buildroot-chip-stable
+ - path: /test/tmp/pocketchip_buildroot/CHIP-buildroot-chip-stable/output/images/rootfs.tar
+- not done. so used below link.
+# for Toshiba_4G_MLC
+# chip-400000-4000-500.ubi.sparse (UBI sparse)
+# - http://opensource.nextthing.co/chip/images/stable/pocketchip/126/chip-400000-4000-500.ubi.sparse
+
+
+
+=== CUSTOM ===
+# 1. Creates firmware (for NAND) images
+$ ./chip-create-nand-images.sh /test/tmp/pocketchip_uboot/CHIP-u-boot-production-mlc /test/tmp/pocketchip_buildroot/CHIP-buildroot-chip-stable/output/images/rootfs.tar ./output/
+
+# 2. Flashing
+$ sudo ./chip-update-firmware2.sh
+
+
+
+=== BACK TO ORIGIN ===
+# checks NAND type, download firmware images and flashing...
+# 1. Flashing
+$ sudo ./chip-update-firmware.sh
+
+
+
+
+
+__EOF__
